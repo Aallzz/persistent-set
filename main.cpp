@@ -43,6 +43,138 @@ std::string get_word() {
     return ans;
 }
 
+TEST(Construction, default_constructor_int) {
+    persistent_set<int> st;
+}
+
+TEST(Construction, copy_constructor_int) {
+    persistent_set<int> st;
+    std::vector<int> c {6, 1, 5, 2, 3, 8, 10, 9, 11, 18, 303, 123, 404, 1, -123};
+    for (int x : c) st.insert(x);
+    persistent_set<int> st2(st);
+    st2.insert(13);
+    EXPECT_TRUE(st.find(13) == st.end());
+    EXPECT_TRUE(st2.find(13) != st2.end());
+    st.insert(14);
+    EXPECT_TRUE(st.find(14) != st.end());
+    EXPECT_TRUE(st2.find(14) == st2.end());
+    st2.erase(st2.find(13));
+    st.erase(st.find(14));
+    for (int x : st) {
+        EXPECT_TRUE(st2.find(x) != st2.end());
+    }
+    for (int x : st2) {
+        EXPECT_TRUE(st.find(x) != st.end());
+    }
+    auto st3(st);
+
+    sort(c.begin(), c.end());
+    c.resize(unique(c.begin(), c.end()) - c.begin());
+    auto rng = std::default_random_engine {};
+    std::shuffle(std::begin(c), std::end(c), rng);
+
+    for (int x : c) {
+        st3.erase(st3.find(x));
+        ASSERT_TRUE(st.find(x) != st.end());
+        ASSERT_TRUE(st3.find(x) == st3.end());
+    }
+}
+
+TEST(Construction, move_constructor_int) {
+    persistent_set<int> st;
+    persistent_set<int> sst;
+    persistent_set<int> ssst;
+    std::vector<int> c {6, 1, 5, 2, 3, 8, 10, 9, 11, 18, 303, 123, 404, 1, -123};
+    for (int x : c) st.insert(x), sst.insert(x), ssst.insert(x);
+    persistent_set<int> st2(std::move(st));
+    st2.insert(13);
+    EXPECT_TRUE(sst.find(13) == sst.end());
+    EXPECT_TRUE(st2.find(13) != st2.end());
+    sst.insert(14);
+    EXPECT_TRUE(sst.find(14) != sst.end());
+    EXPECT_TRUE(st2.find(14) == st2.end());
+    st2.erase(st2.find(13));
+    sst.erase(sst.find(14));
+    for (int x : sst) {
+        EXPECT_TRUE(st2.find(x) != st2.end());
+    }
+    for (int x : st2) {
+        EXPECT_TRUE(sst.find(x) != sst.end());
+    }
+
+    auto st3(std::move(sst));
+
+    sort(c.begin(), c.end());
+    c.resize(unique(c.begin(), c.end()) - c.begin());
+    auto rng = std::default_random_engine {};
+    std::shuffle(std::begin(c), std::end(c), rng);
+
+    for (int x : c) {
+        st3.erase(st3.find(x));
+        ASSERT_TRUE(ssst.find(x) != ssst.end());
+        ASSERT_TRUE(st3.find(x) == st3.end());
+    }
+
+}
+
+TEST(Assignment, copy_assignment) {
+    std::vector<int> c {6, 7, 3, 4, 8};
+    persistent_set<int> st;
+    for (int x : c) st.insert(x);
+    persistent_set<int> sst;
+    std::vector<int> cc {2, 1, 5, 9};
+    for (int x : cc) sst.insert(x);
+    sst = st;
+    st.insert(1123);
+    ASSERT_TRUE(sst.find(1123) == sst.end());
+    for (int x : c) {
+        ASSERT_TRUE(sst.find(x) != sst.end());
+    }
+    for (int x : cc) {
+        ASSERT_TRUE(sst.find(x) == sst.end());
+    }
+}
+
+TEST(Assignment, move_assignment) {
+    std::vector<int> c {6, 7, 3, 4, 8};
+    persistent_set<int> st;
+    for (int x : c) st.insert(x);
+    persistent_set<int> sst;
+    std::vector<int> cc {2, 1, 5, 9};
+    for (int x : cc) sst.insert(x);
+    sst = std::move(st);
+    for (int x : c) {
+        ASSERT_TRUE(sst.find(x) != sst.end());
+    }
+    for (int x : cc) {
+        ASSERT_TRUE(sst.find(x) == sst.end());
+    }
+}
+
+TEST(CornerCases, empty_set) {
+    persistent_set<int> st;
+    EXPECT_EQ(st.begin(), st.end());
+}
+
+TEST(CornerCases, copy_constr_empty_set) {
+    persistent_set<int> st;
+    persistent_set<int> sst(st);
+    EXPECT_EQ(st.begin(), st.end());
+    EXPECT_EQ(sst.begin(), sst.end());
+}
+
+TEST(CornerCases, empty_set_ins_erase) {
+    persistent_set<int> st;
+    st.insert(1);
+    st.erase(st.begin());
+    EXPECT_EQ(st.begin(), st.end());
+}
+
+TEST(CornerCases, empty_set_find) {
+    persistent_set<int> st;
+    EXPECT_TRUE(st.find(123) == st.end());
+}
+
 TEST (RandomTests, insert_range_ints) {
 
     srand(time(nullptr));
@@ -246,7 +378,7 @@ TEST(RandomTests, insert_erase_strings) {
     }
 }
 
-TEST(RandomTests, assignment_constructor_int) {
+TEST(RandomTests, copy_constructor_int) {
     srand(4418);
     persistent_set<int> st;
     std::vector<int> c;
@@ -272,61 +404,6 @@ TEST(RandomTests, assignment_constructor_int) {
         EXPECT_TRUE(st.find(x) != st.end());
     }
 
-    auto st3(st);
-
-    sort(c.begin(), c.end());
-    c.resize(unique(c.begin(), c.end()) - c.begin());
-    auto rng = std::default_random_engine {};
-    std::shuffle(std::begin(c), std::end(c), rng);
-
-    for (int x : c) {
-        st3.erase(st3.find(x));
-        ASSERT_TRUE(st.find(x) != st.end());
-        ASSERT_TRUE(st3.find(x) == st3.end());
-    }
-
-}
-
-TEST(CornerCases, empty_set) {
-    persistent_set<int> st;
-    EXPECT_EQ(st.begin(), st.end());
-}
-
-TEST(CornerCases, empty_set_ins_erase) {
-    persistent_set<int> st;
-    st.insert(1);
-    st.erase(st.begin());
-    EXPECT_EQ(st.begin(), st.end());
-}
-
-TEST(CornerCases, empty_set_find) {
-    persistent_set<int> st;
-    EXPECT_TRUE(st.find(123) == st.end());
-}
-
-TEST(Construction, default_constructor_int) {
-    persistent_set<int> st;
-}
-
-TEST(Construction, assignment_constructor_int) {
-    persistent_set<int> st;
-    std::vector<int> c {6, 1, 5, 2, 3, 8, 10, 9, 11, 18, 303, 123, 404, 1, -123};
-    for (int x : c) st.insert(x);
-    persistent_set<int> st2(st);
-    st2.insert(13);
-    EXPECT_TRUE(st.find(13) == st.end());
-    EXPECT_TRUE(st2.find(13) != st2.end());
-    st.insert(14);
-    EXPECT_TRUE(st.find(14) != st.end());
-    EXPECT_TRUE(st2.find(14) == st2.end());
-    st2.erase(st2.find(13));
-    st.erase(st.find(14));
-    for (int x : st) {
-        EXPECT_TRUE(st2.find(x) != st2.end());
-    }
-    for (int x : st2) {
-        EXPECT_TRUE(st.find(x) != st.end());
-    }
     auto st3(st);
 
     sort(c.begin(), c.end());

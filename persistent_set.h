@@ -14,20 +14,29 @@ struct persistent_set
 
     persistent_set() {}
     persistent_set(persistent_set const& other) noexcept {
-        root = scoped_ptr<node>(other.root);
+        root = other.root;
     }
 
     persistent_set(persistent_set&& other) noexcept {
-        root = std::move(other);
+        root = other.root;
+        other.root = nullptr;
     }
 
     ~persistent_set() {}
 
-    persistent_set& operator=(persistent_set const& rhs) noexcept;
-    persistent_set& operator=(persistent_set&& rhs) noexcept;
+    persistent_set& operator=(persistent_set const& other) noexcept {
+        root = other.root;
+        return *this;
+    }
+
+    persistent_set& operator=(persistent_set&& other) noexcept {
+        root = other.root;
+        other.root = nullptr;
+        return *this;
+    }
 
 
-    iterator find(value_type value) noexcept {
+    iterator find(value_type value) {
         return iterator(root, get(root, value));
     }
 
@@ -43,15 +52,15 @@ struct persistent_set
         return {iterator(root, get(root, value)), true};
     }
 
-    void erase(iterator it) noexcept {
+    void erase(iterator it) {
         root = del(root, *it);
     }
 
-    iterator begin() const noexcept {
+    iterator begin() const {
         return iterator(root, getMin(root));
     }
 
-    iterator end() const noexcept {
+    iterator end() const {
         return iterator(root, nullptr);
     }
 
