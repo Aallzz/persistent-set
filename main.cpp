@@ -1,6 +1,7 @@
 #include <iostream>
 #include "persistent_set.h"
 #include <algorithm>
+#include <random>
 #include "gtest/gtest.h"
 #include <gmock/gmock.h>
 
@@ -245,6 +246,47 @@ TEST(RandomTests, insert_erase_strings) {
     }
 }
 
+TEST(RandomTests, assignment_constructor_int) {
+    srand(4418);
+    persistent_set<int> st;
+    std::vector<int> c;
+    for (int i = 0; i < 1000; ++i) c.push_back(rand() % 1000 - 500);
+
+    for (int x : c) st.insert(x);
+
+    persistent_set<int> st2(st);
+    std::vector<int> add;
+    for (int i = 0; i < 50; ++i) {
+        add.push_back(rand() % 10000 + 1000);
+        st2.insert(add.back());
+        EXPECT_TRUE(st.find(add.back()) == st.end());
+        EXPECT_TRUE(st2.find(add.back()) != st2.end());
+    }
+    for (int x : add) {
+        st2.erase(st2.find(x));
+    }
+    for (int x : st) {
+        EXPECT_TRUE(st2.find(x) != st2.end());
+    }
+    for (int x : st2) {
+        EXPECT_TRUE(st.find(x) != st.end());
+    }
+
+    auto st3(st);
+
+    sort(c.begin(), c.end());
+    c.resize(unique(c.begin(), c.end()) - c.begin());
+    auto rng = std::default_random_engine {};
+    std::shuffle(std::begin(c), std::end(c), rng);
+
+    for (int x : c) {
+        st3.erase(st3.find(x));
+        ASSERT_TRUE(st.find(x) != st.end());
+        ASSERT_TRUE(st3.find(x) == st3.end());
+    }
+
+}
+
 TEST(CornerCases, empty_set) {
     persistent_set<int> st;
     EXPECT_EQ(st.begin(), st.end());
@@ -261,6 +303,46 @@ TEST(CornerCases, empty_set_find) {
     persistent_set<int> st;
     EXPECT_TRUE(st.find(123) == st.end());
 }
+
+TEST(Construction, default_constructor_int) {
+    persistent_set<int> st;
+}
+
+TEST(Construction, assignment_constructor_int) {
+    persistent_set<int> st;
+    std::vector<int> c {6, 1, 5, 2, 3, 8, 10, 9, 11, 18, 303, 123, 404, 1, -123};
+    for (int x : c) st.insert(x);
+    persistent_set<int> st2(st);
+    st2.insert(13);
+    EXPECT_TRUE(st.find(13) == st.end());
+    EXPECT_TRUE(st2.find(13) != st2.end());
+    st.insert(14);
+    EXPECT_TRUE(st.find(14) != st.end());
+    EXPECT_TRUE(st2.find(14) == st2.end());
+    st2.erase(st2.find(13));
+    st.erase(st.find(14));
+    for (int x : st) {
+        EXPECT_TRUE(st2.find(x) != st2.end());
+    }
+    for (int x : st2) {
+        EXPECT_TRUE(st.find(x) != st.end());
+    }
+    auto st3(st);
+
+    sort(c.begin(), c.end());
+    c.resize(unique(c.begin(), c.end()) - c.begin());
+    auto rng = std::default_random_engine {};
+    std::shuffle(std::begin(c), std::end(c), rng);
+
+    for (int x : c) {
+        st3.erase(st3.find(x));
+        ASSERT_TRUE(st.find(x) != st.end());
+        ASSERT_TRUE(st3.find(x) == st3.end());
+    }
+
+}
+
+
 
 int main(int argc, char** argv)
 {

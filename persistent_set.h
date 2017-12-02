@@ -13,8 +13,13 @@ struct persistent_set
     struct iterator;
 
     persistent_set() {}
-    persistent_set(persistent_set const&) noexcept;
-    persistent_set(persistent_set&&) noexcept;
+    persistent_set(persistent_set const& other) noexcept {
+        root = scoped_ptr<node>(other.root);
+    }
+
+    persistent_set(persistent_set&& other) noexcept {
+        root = std::move(other);
+    }
 
     ~persistent_set() {}
 
@@ -57,13 +62,11 @@ private:
         scoped_ptr<node> left {};
         scoped_ptr<node> right {};
 
-        explicit node(T const& val) {
-            key = val;
-        }
+        explicit node(T const& val, scoped_ptr<node> left = nullptr, scoped_ptr<node> right = nullptr)
+            : key(val), left(left), right(right) {}
 
-        explicit node(T&& val) {
-            key = std::move(val);
-        }
+        explicit node(T&& val, scoped_ptr<node> left = nullptr, scoped_ptr<node> right = nullptr)
+            : key(std::move(val)), left(left), right(right) {}
     };
 
     scoped_ptr<node> root {nullptr};
@@ -83,7 +86,7 @@ private:
             return scoped_ptr<node>(new node(k));
         }
 
-        scoped_ptr<node> new_cur = scoped_ptr<node>(cur);
+        scoped_ptr<node> new_cur = scoped_ptr<node>(new node(cur->key, cur->left, cur->right));
 
         if (k < cur->key) {
             new_cur->left = put(cur->left, k);
@@ -127,9 +130,10 @@ private:
     }
 
     scoped_ptr<node> delMin(scoped_ptr<node> cur) {
+        if (!cur) return nullptr;
         if (cur->left == nullptr)
-            return scoped_ptr<node>(cur->right);
-        scoped_ptr<node> new_cur = scoped_ptr<node>(cur);
+            return cur->right ? scoped_ptr<node>(new node(cur->right->key, cur->right->left, cur->right->right)) : nullptr;
+        scoped_ptr<node> new_cur = scoped_ptr<node>(new node(cur->key, cur->left, cur->right));
         new_cur->left = delMin(cur->left);
         return new_cur;
     }
@@ -137,16 +141,22 @@ private:
     scoped_ptr<node> del(scoped_ptr<node> cur, T k) {
         if (cur == nullptr) return nullptr;
 
-        scoped_ptr<node> new_cur = scoped_ptr<node>(cur);
+        scoped_ptr<node> new_cur = scoped_ptr<node>(new node(cur->key, cur->left, cur->right));
 
         if (k < cur->key) {
             new_cur->left = del(cur->left, k);
         } else if (k > cur->key) {
             new_cur->right = del(cur->right, k);
         } else {
-            if (cur->right == nullptr) return scoped_ptr<node>(cur->left);
-            if (cur->left == nullptr) return scoped_ptr<node>(cur->right);
-            scoped_ptr<node> tmp = cur;
+            if (cur->right == nullptr) {
+                if (!cur->left) return nullptr;
+                return scoped_ptr<node>(new node(cur->left->key, cur->left->left, cur->left->right));
+            }
+            if (cur->left == nullptr) {
+                if (!cur->right) return nullptr;
+                return scoped_ptr<node>(new node(cur->right->key, cur->right->left, cur->right->right));
+            }
+            scoped_ptr<node> tmp = scoped_ptr<node>(new node(cur->key, cur->left, cur->right));
             new_cur = getMin(cur->right);
             new_cur->right  = delMin(tmp->right);
             new_cur->left = tmp->left;
