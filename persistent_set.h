@@ -13,6 +13,7 @@ struct persistent_set
     struct iterator;
 
     persistent_set() {}
+
     persistent_set(persistent_set const& other) noexcept {
         root = other.root;
     }
@@ -67,9 +68,9 @@ struct persistent_set
 private:
 
     struct node {
-        T key;
-        scoped_ptr<node> left {};
-        scoped_ptr<node> right {};
+        T key {};
+        scoped_ptr<node> left {nullptr};
+        scoped_ptr<node> right {nullptr};
 
         explicit node(T const& val, scoped_ptr<node> left = nullptr, scoped_ptr<node> right = nullptr)
             : key(val), left(left), right(right) {}
@@ -253,7 +254,10 @@ struct persistent_set<T, scoped_ptr>::iterator
         return i;
     }
 
-    iterator(scoped_ptr<node> owner, scoped_ptr<node> ptr) :  ptr(ptr), owner(owner) {}
+    iterator(scoped_ptr<node> owner, scoped_ptr<node> ptr)
+        : ptr(ptr), owner(owner) {
+
+    }
 
     friend bool operator ==(iterator a, iterator b) {
         return (a.owner == b.owner && a.ptr == b.ptr);
@@ -261,6 +265,10 @@ struct persistent_set<T, scoped_ptr>::iterator
 
     friend bool operator !=(iterator a, iterator b) {
         return !(a == b);
+    }
+
+    ~iterator() {
+
     }
 
 private:
