@@ -176,6 +176,13 @@ TEST(SharedPtr_CornerCases, empty_set_find) {
     EXPECT_TRUE(st.find(123) == st.end());
 }
 
+TEST(SharedPtr_CornerCases, empty_assignment) {
+    persistent_set<int> st;
+    persistent_set<int> sst;
+    st = sst;
+    EXPECT_EQ(st.begin(), st.end());
+}
+
 TEST(SharedPtr_RandomTests, insert_range_ints) {
     srand(time(nullptr));
     for (int xxx = 0; xxx < 10; ++xxx) {
@@ -270,7 +277,7 @@ TEST(SharedPtr_RandomTests, insert_find_ints) {
     srand(time(nullptr));
     persistent_set<int> st;
     std::set<int> rst;
-    for (int i = 0, x = rand() % 2000 - 1000; i < 30000; ++i, x = rand() % 2000 - 1000) {
+    for (int i = 0, x = rand() % 2000 - 1000; i < 3000; ++i, x = rand() % 2000 - 1000) {
         st.insert(x);
         rst.insert(x);
     }
@@ -523,7 +530,7 @@ TEST(SmartLinkedPtr_RandomTests, insert_find_ints) {
     srand(time(nullptr));
     persistent_set<int, smart_linked_pointer> st;
     std::set<int> rst;
-    for (int i = 0, x = rand() % 2000 - 1000; i < 30000; ++i, x = rand() % 2000 - 1000) {
+    for (int i = 0, x = rand() % 2000 - 1000; i < 3000; ++i, x = rand() % 2000 - 1000) {
         st.insert(x);
         rst.insert(x);
     }
@@ -538,6 +545,71 @@ TEST(SmartLinkedPtr_RandomTests, insert_find_ints) {
         }
     }
 }
+
+TEST(SmartLinkedPtr_RandomTests, insert_find_erase_ints) {
+    srand(time(nullptr));
+    persistent_set<int, smart_linked_pointer> st;
+    persistent_set<int, smart_linked_pointer> sst;
+    std::set<int> cst, csst;
+    std::set<int> rst;
+    for (int i = 0; i < 10000; ++i) {
+        int step = rand() % 8;
+        int x = rand() % 1000;
+        switch (step) {
+        case 0:
+            cst.insert(x);
+            st.insert(x);
+            break;
+        case 1:
+            csst.insert(x);
+            sst.insert(x);
+            break;
+        case 2:
+            if (st.find(x) != st.end()) {
+                st.erase(st.find(x));
+                cst.erase(x);
+            }
+            break;
+        case 3:
+            if (sst.find(x) != sst.end()) {
+                sst.erase(sst.find(x));
+                csst.erase(x);
+            }
+            break;
+        case 4:
+            if (st.begin() != st.end()) {
+                st.erase(st.begin());
+                cst.erase(cst.begin());
+            }
+            break;
+        case 5:
+            if (sst.begin() != sst.end()) {
+                sst.erase(sst.begin());
+                csst.erase(csst.begin());
+            }
+            break;
+        case 6:
+            st = sst;
+            cst = csst;
+            break;
+        case 7:
+            sst = st;
+            csst = cst;
+            break;
+        default:
+            break;
+        }
+        std::vector<int> vst, vsst;
+        for (int x : st) vst.push_back(x);
+        for (int x : sst) vsst.push_back(x);
+        std::vector<int> vcst, vcsst;
+        for (int x : cst) vcst.push_back(x);
+        for (int x : csst) vcsst.push_back(x);
+        EXPECT_EQ(vst, vcst);
+        EXPECT_EQ(vsst, vcsst);
+    }
+}
+
 
 
 TEST(SmartLinkedPtr_RandomTests, insert_find_strings) {
@@ -611,11 +683,158 @@ TEST(SmartLinkedPtr_RandomTests, copy_constructor_int) {
 }
 
 
+TEST(SmartLinkedPtr_Construction, default_constructor_int) {
+    persistent_set<int, smart_linked_pointer> st;
+}
+
+TEST(SmartLinkedPtr_Construction, copy_constructor_int) {
+    persistent_set<int, smart_linked_pointer> st;
+    std::vector<int> c {6, 1, 5, 2, 3, 8, 10, 9, 11, 18, 303, 123, 404, 1, -123};
+    for (int x : c) st.insert(x);
+    persistent_set<int, smart_linked_pointer> st2(st);
+    st2.insert(13);
+    EXPECT_TRUE(st.find(13) == st.end());
+    EXPECT_TRUE(st2.find(13) != st2.end());
+    st.insert(14);
+    EXPECT_TRUE(st.find(14) != st.end());
+    EXPECT_TRUE(st2.find(14) == st2.end());
+    st2.erase(st2.find(13));
+    st.erase(st.find(14));
+    for (int x : st) {
+        EXPECT_TRUE(st2.find(x) != st2.end());
+    }
+    for (int x : st2) {
+        EXPECT_TRUE(st.find(x) != st.end());
+    }
+    auto st3(st);
+
+    sort(c.begin(), c.end());
+    c.resize(unique(c.begin(), c.end()) - c.begin());
+    auto rng = std::default_random_engine {};
+    std::shuffle(std::begin(c), std::end(c), rng);
+
+    for (int x : c) {
+        st3.erase(st3.find(x));
+        ASSERT_TRUE(st.find(x) != st.end());
+        ASSERT_TRUE(st3.find(x) == st3.end());
+    }
+}
+
+TEST(SmartLinkedPtr_Construction, move_constructor_int) {
+    persistent_set<int, smart_linked_pointer> st;
+    persistent_set<int, smart_linked_pointer> sst;
+    persistent_set<int, smart_linked_pointer> ssst;
+    std::vector<int> c {6, 1, 5, 2, 3, 8, 10, 9, 11, 18, 303, 123, 404, 1, -123};
+    for (int x : c) st.insert(x), sst.insert(x), ssst.insert(x);
+    persistent_set<int, smart_linked_pointer> st2(std::move(st));
+    st2.insert(13);
+    EXPECT_TRUE(sst.find(13) == sst.end());
+    EXPECT_TRUE(st2.find(13) != st2.end());
+    sst.insert(14);
+    EXPECT_TRUE(sst.find(14) != sst.end());
+    EXPECT_TRUE(st2.find(14) == st2.end());
+    st2.erase(st2.find(13));
+    sst.erase(sst.find(14));
+    for (int x : sst) {
+        EXPECT_TRUE(st2.find(x) != st2.end());
+    }
+    for (int x : st2) {
+        EXPECT_TRUE(sst.find(x) != sst.end());
+    }
+
+    auto st3(std::move(sst));
+
+    sort(c.begin(), c.end());
+    c.resize(unique(c.begin(), c.end()) - c.begin());
+    auto rng = std::default_random_engine {};
+    std::shuffle(std::begin(c), std::end(c), rng);
+
+    for (int x : c) {
+        st3.erase(st3.find(x));
+        ASSERT_TRUE(ssst.find(x) != ssst.end());
+        ASSERT_TRUE(st3.find(x) == st3.end());
+    }
+
+}
+
+TEST(SmartLinkedPtr_Assignment, copy_assignment) {
+    std::vector<int> c {6, 7, 3, 4, 8};
+    persistent_set<int, smart_linked_pointer> st;
+    for (int x : c) st.insert(x);
+    persistent_set<int, smart_linked_pointer> sst;
+    std::vector<int> cc {2, 1, 5, 9};
+    for (int x : cc) sst.insert(x);
+    sst = st;
+    st.insert(1123);
+    ASSERT_TRUE(sst.find(1123) == sst.end());
+    for (int x : c) {
+        ASSERT_TRUE(sst.find(x) != sst.end());
+    }
+    for (int x : cc) {
+        ASSERT_TRUE(sst.find(x) == sst.end());
+    }
+}
+
+TEST(SmartLinkedPtr_Assignment, move_assignment) {
+    std::vector<int> c {6, 7, 3, 4, 8};
+    persistent_set<int, smart_linked_pointer> st;
+    for (int x : c) st.insert(x);
+    persistent_set<int, smart_linked_pointer> sst;
+    std::vector<int> cc {2, 1, 5, 9};
+    for (int x : cc) sst.insert(x);
+    sst = std::move(st);
+    for (int x : c) {
+        ASSERT_TRUE(sst.find(x) != sst.end());
+    }
+    for (int x : cc) {
+        ASSERT_TRUE(sst.find(x) == sst.end());
+    }
+}
+
+TEST(SmartLinkedPtrr_CornerCases, empty_set) {
+    persistent_set<int, smart_linked_pointer> st;
+    EXPECT_EQ(st.begin(), st.end());
+}
+
+TEST(SmartLinkedPtr_CornerCases, copy_constr_empty_set) {
+    persistent_set<int, smart_linked_pointer> st;
+    persistent_set<int, smart_linked_pointer> sst(st);
+    EXPECT_EQ(st.begin(), st.end());
+    EXPECT_EQ(sst.begin(), sst.end());
+}
+
+TEST(SmartLinkedPtr_CornerCases, empty_set_ins_erase) {
+    persistent_set<int, smart_linked_pointer> st;
+    st.insert(1);
+    st.erase(st.begin());
+    EXPECT_EQ(st.begin(), st.end());
+}
+
+TEST(SmartLinkedPtr_CornerCases, empty_assignment) {
+    persistent_set<int, smart_linked_pointer> st;
+    persistent_set<int, smart_linked_pointer> sst;
+    st = sst;
+    st.insert(1);
+    sst.insert(2);
+    EXPECT_TRUE(*(st.begin()) == 1);
+    EXPECT_TRUE(*(sst.begin()) == 2);
+}
+
+TEST(SmartLinkedPtr_CornerCases, self_assignment) {
+    persistent_set<int, smart_linked_pointer> st;
+    st.insert(12);
+    st = st;
+    st.insert(1);
+    EXPECT_TRUE(*(st.begin()) == 1);
+}
+
 template struct smart_linked_pointer<std::string>;
 template struct smart_linked_pointer<int>;
+
 
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
+    ::testing::GTEST_FLAG(filter) = "-test_set*";
     return RUN_ALL_TESTS();
 }

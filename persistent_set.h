@@ -167,7 +167,10 @@ private:
                 return scoped_ptr<node>(new node(cur->right->key, cur->right->left, cur->right->right));
             }
             scoped_ptr<node> tmp = scoped_ptr<node>(new node(cur->key, cur->left, cur->right));
-            new_cur = getMin(cur->right);
+            scoped_ptr<node> ttmp = getMin(cur->right);
+
+            new_cur = scoped_ptr<node>(new node(ttmp->key, ttmp->left, ttmp->right));
+
             new_cur->right  = delMin(tmp->right);
             new_cur->left = tmp->left;
         }
@@ -254,16 +257,19 @@ struct persistent_set<T, scoped_ptr>::iterator
         return i;
     }
 
-    iterator(scoped_ptr<node> owner, scoped_ptr<node> ptr)
+    iterator(scoped_ptr<node> const& owner, scoped_ptr<node> const& ptr)
         : ptr(ptr), owner(owner) {
-
     }
 
-    friend bool operator ==(iterator a, iterator b) {
+    iterator(scoped_ptr<node>&& owner, scoped_ptr<node>&& ptr)
+        : ptr(ptr), owner(owner) {
+    }
+
+    friend bool operator ==(iterator const& a, iterator const& b) {
         return (a.owner == b.owner && a.ptr == b.ptr);
     }
 
-    friend bool operator !=(iterator a, iterator b) {
+    friend bool operator !=(iterator const& a, iterator const& b) {
         return !(a == b);
     }
 
@@ -276,10 +282,6 @@ private:
     scoped_ptr<node> ptr;
     scoped_ptr<node> owner;
 };
-
-
-
-
 
 #endif // PERSISTENT_SET_H
 

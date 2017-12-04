@@ -34,23 +34,26 @@ struct smart_linked_pointer {
         if (pdata == other.pdata) return ;
         if (left) left->right = right;
         if (right) right->left = left;
+        if (!left && !right)
+            delete pdata, pdata = nullptr;
         pdata = other.pdata;
+        left = right = nullptr;
         if (pdata == nullptr) return ;
-
         left = &other;
         right = other.right;
         if (other.right) {
             other.right->left = this;
         }
         other.right = this;
-
         return *this;
     }
 
     smart_linked_pointer& operator = (smart_linked_pointer&& other) {
         if (left) left->right = right;
         if (right) right->left = left;
-
+        if (!left && !right) {
+            delete pdata;
+        }
         pdata = other.pdata;
         left = other.left;
         right = other.right;
@@ -65,16 +68,19 @@ struct smart_linked_pointer {
     smart_linked_pointer& operator = (std::nullptr_t) {
         if (left) left->right = right;
         if (right) right->left = left;
+        if (!left && !right) {
+            delete pdata;
+        }
+        left = right = nullptr;
         pdata = nullptr;
         return *this;
     }
 
     ~smart_linked_pointer() {
-        if (!pdata) return ;
         if (right) right->left = left;
         if (left) left->right = right;
         if (!left && !right)
-            delete pdata;
+            delete pdata, pdata = nullptr;
     }
 
     T& operator *() const {
@@ -85,12 +91,12 @@ struct smart_linked_pointer {
         return pdata;
     }
 
-    friend void swap(smart_linked_pointer& p1, smart_linked_pointer& p2) {
-        if (p1.pdata == p2.pdata) return ;
-        std::swap(p1.pdata, p2.pdata);
-        std::swap(p1.left, p2.left);
-        std::swap(p1.right, p2.right);
-    }
+//    friend void swap(smart_linked_pointer& p1, smart_linked_pointer& p2) {
+//        if (p1.pdata == p2.pdata) return ;
+//        std::swap(p1.pdata, p2.pdata);
+//        std::swap(p1.left, p2.left);
+//        std::swap(p1.right, p2.right);
+//    }
 
     operator bool() const{
         return pdata;
