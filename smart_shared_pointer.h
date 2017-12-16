@@ -13,19 +13,19 @@ struct smart_shared_pointer{
         pdata->cnt_refs = 1;
     }
 
-    smart_shared_pointer(smart_shared_pointer const& other) : pdata(other.pdata) {
+    smart_shared_pointer(smart_shared_pointer const& other) noexcept : pdata(other.pdata) {
         if (!pdata) return ;
         (pdata->cnt_refs)++;
     }
 
-    smart_shared_pointer(smart_shared_pointer&& other)
+    smart_shared_pointer(smart_shared_pointer&& other) noexcept
         : pdata(other.pdata) {
         other.pdata = nullptr;
     }
 
-    smart_shared_pointer(std::nullptr_t) {}
+    smart_shared_pointer(std::nullptr_t) noexcept {}
 
-    smart_shared_pointer& operator = (smart_shared_pointer const& other) {
+    smart_shared_pointer& operator = (smart_shared_pointer const& other) noexcept {
         if (pdata == other.pdata) return *this;
         remove_node();
         pdata = other.pdata;
@@ -34,20 +34,20 @@ struct smart_shared_pointer{
         return *this;
     }
 
-    smart_shared_pointer& operator = (smart_shared_pointer&& other) {
+    smart_shared_pointer& operator = (smart_shared_pointer&& other) noexcept {
         remove_node();
         pdata = other.pdata;
         other.pdata = nullptr;
         return *this;
     }
 
-    smart_shared_pointer& operator = (std::nullptr_t) {
+    smart_shared_pointer& operator = (std::nullptr_t) noexcept {
         remove_node();
         pdata = nullptr;
         return *this;
     }
 
-    ~smart_shared_pointer() {
+    ~smart_shared_pointer() noexcept {
         if (pdata) {
             --(pdata->cnt_refs);
             if (!pdata->cnt_refs) {
@@ -70,7 +70,7 @@ struct smart_shared_pointer{
         std::swap(p1.pdata, p2.pdata);
     }
 
-    operator bool() const{
+    operator bool() const noexcept{
         return pdata;
     }
 
@@ -89,6 +89,14 @@ struct smart_shared_pointer{
     friend bool operator != (smart_shared_pointer const& a, std::nullptr_t) noexcept {
         return a.pdata;
     }
+
+    friend bool operator == (std::nullptr_t, smart_shared_pointer const& a) noexcept {
+        return a == nullptr;
+    }
+
+    friend bool operator != (std::nullptr_t, smart_shared_pointer const& a) noexcept {
+        return a != nullptr;
+    }
     
 private:
 
@@ -98,10 +106,10 @@ private:
 
         count_obj() = default;
 
-        count_obj(T *data)
+        count_obj(T *data) noexcept
             : data(data) {}
 
-        ~count_obj() {
+        ~count_obj() noexcept {
             delete data;
         }
 
@@ -109,7 +117,7 @@ private:
 
     count_obj *pdata {};
 
-    void remove_node() {
+    void remove_node() noexcept {
         if (pdata) {
             --(pdata->cnt_refs);
             if (!pdata->cnt_refs) {

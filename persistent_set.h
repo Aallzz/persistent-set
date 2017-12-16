@@ -24,7 +24,7 @@ struct persistent_set
         other.root = nullptr;
     }
 
-    ~persistent_set() {}
+    ~persistent_set() noexcept {}
 
     persistent_set& operator=(persistent_set const& other) noexcept {
         root = other.root;
@@ -124,7 +124,7 @@ private:
         return new_cur;
     }
 
-    friend scoped_ptr<node> getMin(scoped_ptr<node> cur) {
+    friend scoped_ptr<node> getMin(scoped_ptr<node> cur) noexcept {
         if (!cur) return nullptr;
         if (cur->left == nullptr)
             return cur;
@@ -132,7 +132,7 @@ private:
             return getMin(cur->left);
     }
 
-    friend scoped_ptr<node> getMax(scoped_ptr<node> cur) {
+    friend scoped_ptr<node> getMax(scoped_ptr<node> cur) noexcept {
         if (!cur) return nullptr;
         if (cur->right == nullptr)
             return cur;
@@ -258,19 +258,19 @@ struct persistent_set<T, scoped_ptr>::iterator
         return i;
     }
 
-    iterator(scoped_ptr<node> const& owner, scoped_ptr<node> const& ptr)
+    iterator(scoped_ptr<node> const& owner, scoped_ptr<node> const& ptr) noexcept
         : ptr(ptr), owner(owner) {
     }
 
-    iterator(scoped_ptr<node>&& owner, scoped_ptr<node>&& ptr)
+    iterator(scoped_ptr<node>&& owner, scoped_ptr<node>&& ptr) noexcept
         : ptr(ptr), owner(owner) {
     }
 
-    friend bool operator ==(iterator const& a, iterator const& b) {
+    friend bool operator ==(iterator const& a, iterator const& b) noexcept {
         return (a.owner == b.owner && a.ptr == b.ptr);
     }
 
-    friend bool operator !=(iterator const& a, iterator const& b) {
+    friend bool operator !=(iterator const& a, iterator const& b) noexcept {
         return !(a == b);
     }
 

@@ -6,11 +6,11 @@ struct smart_linked_pointer {
 
     smart_linked_pointer() = default;
 
-    explicit smart_linked_pointer(T* ptr) {
+    explicit smart_linked_pointer(T* ptr) noexcept {
         pdata = ptr;
     }
 
-    smart_linked_pointer(smart_linked_pointer const& other) : pdata(other.pdata) {
+    smart_linked_pointer(smart_linked_pointer const& other) noexcept : pdata(other.pdata) {
         if (pdata == nullptr) return ;
         left = &other;
         right = other.right;
@@ -20,7 +20,7 @@ struct smart_linked_pointer {
         other.right = this;
     }
 
-    smart_linked_pointer(smart_linked_pointer&& other)
+    smart_linked_pointer(smart_linked_pointer&& other) noexcept
         : pdata(other.pdata), left(other.left), right(other.right) {
         other.pdata = nullptr;
         other.left = other.right = nullptr;
@@ -28,9 +28,9 @@ struct smart_linked_pointer {
         if (right) right->left = this;
     }
 
-    smart_linked_pointer(std::nullptr_t) {}
+    smart_linked_pointer(std::nullptr_t) noexcept {}
 
-    smart_linked_pointer& operator = (smart_linked_pointer const& other) {
+    smart_linked_pointer& operator = (smart_linked_pointer const& other) noexcept {
         if (pdata == other.pdata) return ;
         remove_node();
         pdata = other.pdata;
@@ -44,7 +44,7 @@ struct smart_linked_pointer {
         return *this;
     }
 
-    smart_linked_pointer& operator = (smart_linked_pointer&& other) {
+    smart_linked_pointer& operator = (smart_linked_pointer&& other) noexcept {
         remove_node();
         pdata = other.pdata;
         left = other.left;
@@ -57,12 +57,12 @@ struct smart_linked_pointer {
         return *this;
     }
 
-    smart_linked_pointer& operator = (std::nullptr_t) {
+    smart_linked_pointer& operator = (std::nullptr_t) noexcept {
         remove_node();
         return *this;
     }
 
-    ~smart_linked_pointer() {
+    ~smart_linked_pointer() noexcept {
         if (right) right->left = left;
         if (left) left->right = right;
         if (!left && !right)
@@ -84,7 +84,7 @@ struct smart_linked_pointer {
         std::swap(p1.right, p2.right);
     }
 
-    operator bool() const{
+    operator bool() const noexcept {
         return pdata;
     }
 
@@ -104,13 +104,21 @@ struct smart_linked_pointer {
         return a.pdata;
     }
 
+    friend bool operator == (std::nullptr_t, smart_linked_pointer const& a) noexcept {
+        return a == nullptr;
+    }
+
+    friend bool operator != (std::nullptr_t, smart_linked_pointer const& a) noexcept {
+        return a != nullptr;
+    }
+
 private:
 
     T *pdata {nullptr};
     mutable smart_linked_pointer *left {nullptr};
     mutable smart_linked_pointer *right {nullptr};
 
-    void remove_node() {
+    void remove_node() noexcept {
         if (left) left->right = right;
         if (right) right->left = left;
         if (!left && !right) {
