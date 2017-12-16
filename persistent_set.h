@@ -37,6 +37,9 @@ struct persistent_set
         return *this;
     }
 
+    void swap(persistent_set& other) {
+        swap(root, other.root);
+    }
 
     iterator find(value_type value) {
         return iterator(root, get(root, value));
@@ -81,7 +84,6 @@ private:
     };
 
     scoped_ptr<node> root {nullptr};
-    scoped_ptr<node> prev_root {nullptr};
 
     scoped_ptr<node> get(scoped_ptr<node> cur, T k) const {
         if (cur == nullptr) return nullptr;

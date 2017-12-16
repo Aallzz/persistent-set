@@ -77,11 +77,20 @@ struct smart_linked_pointer {
         return pdata;
     }
 
+
+
     friend void swap(smart_linked_pointer& p1, smart_linked_pointer& p2) noexcept {
         if (p1.pdata == p2.pdata) return ;
         std::swap(p1.pdata, p2.pdata);
         std::swap(p1.left, p2.left);
         std::swap(p1.right, p2.right);
+    }
+
+    void swap(smart_linked_pointer& p2) {
+        if (pdata == p2.pdata) return ;
+        std::swap(pdata, p2.pdata);
+        std::swap(left, p2.left);
+        std::swap(right, p2.right);
     }
 
     operator bool() const noexcept {

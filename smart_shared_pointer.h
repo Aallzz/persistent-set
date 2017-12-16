@@ -70,6 +70,11 @@ struct smart_shared_pointer{
         std::swap(p1.pdata, p2.pdata);
     }
 
+    void swap(smart_shared_pointer& p2) noexcept {
+        if (pdata == p2.pdata) return ;
+        std::swap(pdata, p2.pdata);
+    }
+
     operator bool() const noexcept{
         return pdata;
     }

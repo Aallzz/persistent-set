@@ -1,7 +1,6 @@
 #include <iostream>
 #include "persistent_set.h"
 #include "smart_linked_pointer.h"
-#include "smart_shared_pointer.h"
 #include <algorithm>
 #include <random>
 #include "gtest/gtest.h"
@@ -51,9 +50,8 @@ TEST(SharedPtr_Construction, default_constructor_int) {
 
 TEST(SharedPtr_Construction, copy_constructor_int) {
     persistent_set<int> st;
-    std::vector<int> c {6, 1}; //5, 2, 3, 8, 10, 9, 11, 18, 303, 123, 404, 1, -123};
-    for (int x : c)
-        st.insert(x);
+    std::vector<int> c {6, 1, 5, 2, 3, 8, 10, 9, 11, 18, 303, 123, 404, 1, -123};
+    for (int x : c) st.insert(x);
     persistent_set<int> st2(st);
     st2.insert(13);
     EXPECT_TRUE(st.find(13) == st.end());
