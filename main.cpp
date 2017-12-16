@@ -39,7 +39,7 @@ std::string get_word() {
     int n = rand() % 100 + 1;
     std::string ans;
     for (int i = 0; i < n; ++i) {
-        ans += rand() % 25 + 'a';
+        ans += (char)(rand() % 25 + 'a');
     }
     return ans;
 }
@@ -184,7 +184,7 @@ TEST(SharedPtr_CornerCases, empty_assignment) {
 }
 
 TEST(SharedPtr_RandomTests, insert_range_ints) {
-    srand(time(nullptr));
+    srand((unsigned)time(nullptr));
     for (int xxx = 0; xxx < 10; ++xxx) {
         std::vector<int> cc, c;
         persistent_set<int> st;
@@ -204,7 +204,7 @@ TEST(SharedPtr_RandomTests, insert_range_ints) {
 
 
 TEST(SharedPtr_RandomTests, insert_range_strings) {
-    srand(time(nullptr));
+    srand((unsigned)time(nullptr));
 
     for (int xxx = 0; xxx < 10; ++xxx) {
         std::vector<std::string> cc, c;
@@ -225,7 +225,7 @@ TEST(SharedPtr_RandomTests, insert_range_strings) {
 }
 
 TEST(SharedPtr_RandomTests, insert_range_ints_mystructs) {
-    srand(time(nullptr));
+    srand((unsigned)time(nullptr));
 
     for (int xxx = 0; xxx < 10; ++xxx) {
         std::vector<my_struct> cc, c;
@@ -247,7 +247,7 @@ TEST(SharedPtr_RandomTests, insert_range_ints_mystructs) {
 
 TEST(SharedPtr_RandomTests, insert_moveit_ints) {
     persistent_set<int> st;
-    srand(time(nullptr));
+    srand((unsigned)time(nullptr));
     std::set<int> rst;
     for (int i = 0, x = rand() % 200 - 20; i < 30; ++i, x = rand() % 200 - 20) {
         st.insert(x);
@@ -274,7 +274,7 @@ TEST(SharedPtr_RandomTests, insert_moveit_ints) {
 
 
 TEST(SharedPtr_RandomTests, insert_find_ints) {
-    srand(time(nullptr));
+    srand((unsigned)time(nullptr));
     persistent_set<int> st;
     std::set<int> rst;
     for (int i = 0, x = rand() % 2000 - 1000; i < 3000; ++i, x = rand() % 2000 - 1000) {
@@ -318,7 +318,7 @@ TEST(SharedPtr_RandomTests, insert_find_strings) {
 }
 
 TEST(SharedPtr_RandomTests, insert_erase_ints) {
-    srand(time(nullptr));
+    srand((unsigned)time(nullptr));
     persistent_set<int> st;
     std::set<int> rst;
     std::vector<int> ccc;
@@ -352,7 +352,7 @@ TEST(SharedPtr_RandomTests, insert_erase_ints) {
 
 
 TEST(SharedPtr_RandomTests, insert_erase_strings) {
-    srand(time(nullptr));
+    srand((unsigned)time(nullptr));
     persistent_set<std::string> st;
     std::set<std::string> rst;
     std::string x = get_word();
@@ -437,7 +437,7 @@ TEST(SmartLinkedPtr_RandomTests, easy_check) {
 }
 
 TEST(SmartLinkedPtr_RandomTests, insert_range_ints) {
-    srand(time(nullptr));
+    srand((unsigned)time(nullptr));
     for (int xxx = 0; xxx < 10; ++xxx) {
         std::vector<int> cc, c;
         persistent_set<int, smart_linked_pointer> st;
@@ -458,7 +458,7 @@ TEST(SmartLinkedPtr_RandomTests, insert_range_ints) {
 }
 
 TEST(SmartLinkedPtr_RandomTests, insert_range_strings) {
-    srand(time(nullptr));
+    srand((unsigned)time(nullptr));
 
     for (int xxx = 0; xxx < 10; ++xxx) {
         std::vector<std::string> cc, c;
@@ -479,7 +479,7 @@ TEST(SmartLinkedPtr_RandomTests, insert_range_strings) {
 }
 
 TEST(SmartLinkedPtr_RandomTests, insert_range_ints_mystructs) {
-    srand(time(nullptr));
+    srand((unsigned)time(nullptr));
 
     for (int xxx = 0; xxx < 10; ++xxx) {
         std::vector<my_struct> cc, c;
@@ -501,7 +501,7 @@ TEST(SmartLinkedPtr_RandomTests, insert_range_ints_mystructs) {
 
 TEST(SmartLinkedPtr_RandomTests, insert_moveit_ints) {
     persistent_set<int, smart_linked_pointer> st;
-    srand(time(nullptr));
+    srand((unsigned)time(nullptr));
     std::set<int> rst;
     for (int i = 0, x = rand() % 200 - 20; i < 30; ++i, x = rand() % 200 - 20) {
         st.insert(x);
@@ -527,7 +527,7 @@ TEST(SmartLinkedPtr_RandomTests, insert_moveit_ints) {
 }
 
 TEST(SmartLinkedPtr_RandomTests, insert_find_ints) {
-    srand(time(nullptr));
+    srand((unsigned)time(nullptr));
     persistent_set<int, smart_linked_pointer> st;
     std::set<int> rst;
     for (int i = 0, x = rand() % 2000 - 1000; i < 3000; ++i, x = rand() % 2000 - 1000) {
@@ -547,7 +547,7 @@ TEST(SmartLinkedPtr_RandomTests, insert_find_ints) {
 }
 
 TEST(SmartLinkedPtr_RandomTests, insert_find_erase_ints) {
-    srand(time(nullptr));
+    srand((unsigned)time(nullptr));
     persistent_set<int, smart_linked_pointer> st;
     persistent_set<int, smart_linked_pointer> sst;
     std::set<int> cst, csst;

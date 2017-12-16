@@ -40,7 +40,7 @@ struct persistent_set
         swap(root, other.root);
     }
 
-    iterator find(value_type value) {
+    iterator find(value_type value) const {
         return iterator(root, get(root, value));
     }
 
@@ -82,9 +82,9 @@ private:
             : key(std::move(val)), left(left), right(right) {}
     };
 
-    scoped_ptr<node> root {nullptr};
+    mutable scoped_ptr<node> root {nullptr};
 
-    scoped_ptr<node> get(scoped_ptr<node> cur, T k) const {
+    static scoped_ptr<node> get(scoped_ptr<node> cur, T k) {
         if (cur == nullptr) return nullptr;
         if (k < cur->key)
             return get(cur->left, k);
@@ -93,7 +93,7 @@ private:
         else return cur;
     }
 
-    scoped_ptr<node> put(scoped_ptr<node> cur, T k) {
+    static scoped_ptr<node> put(scoped_ptr<node> cur, T k) {
         if (cur == nullptr) {
             return scoped_ptr<node>(new node(k));
         }
@@ -109,7 +109,7 @@ private:
         return new_cur;
     }
 
-    scoped_ptr<node> put(scoped_ptr<node> cur, T&& k) {
+    static scoped_ptr<node> put(scoped_ptr<node> cur, T&& k) {
         if (cur == nullptr) {
             return scoped_ptr<node>(new node(k));
         }
@@ -125,7 +125,7 @@ private:
         return new_cur;
     }
 
-    friend scoped_ptr<node> getMin(scoped_ptr<node> cur) noexcept {
+    static scoped_ptr<node> getMin(scoped_ptr<node> cur) noexcept {
         if (!cur) return nullptr;
         if (cur->left == nullptr)
             return cur;
@@ -133,7 +133,7 @@ private:
             return getMin(cur->left);
     }
 
-    friend scoped_ptr<node> getMax(scoped_ptr<node> cur) noexcept {
+    static scoped_ptr<node> getMax(scoped_ptr<node> cur) noexcept {
         if (!cur) return nullptr;
         if (cur->right == nullptr)
             return cur;
@@ -141,7 +141,7 @@ private:
             return getMax(cur->right);
     }
 
-    scoped_ptr<node> delMin(scoped_ptr<node> cur) {
+    static scoped_ptr<node> delMin(scoped_ptr<node> cur) {
         if (!cur) return nullptr;
         if (cur->left == nullptr)
             return cur->right ? scoped_ptr<node>(new node(cur->right->key, cur->right->left, cur->right->right)) : nullptr;
@@ -150,7 +150,7 @@ private:
         return new_cur;
     }
 
-    scoped_ptr<node> del(scoped_ptr<node> cur, T k) {
+    static scoped_ptr<node> del(scoped_ptr<node> cur, T k) {
         if (cur == nullptr) return nullptr;
 
         scoped_ptr<node> new_cur = scoped_ptr<node>(new node(cur->key, cur->left, cur->right));
@@ -180,7 +180,7 @@ private:
         return new_cur;
     }
 
-    friend scoped_ptr<node> prev(scoped_ptr<node> cur, T k) {
+    static scoped_ptr<node> prev(scoped_ptr<node> cur, T k) {
         if (cur == nullptr) return nullptr;
         std::vector<scoped_ptr<node>> path;
         path.push_back(nullptr);
@@ -202,7 +202,7 @@ private:
         return nullptr;
     }
 
-    friend scoped_ptr<node> next(scoped_ptr<node> cur, T k) {
+    static scoped_ptr<node> next(scoped_ptr<node> cur, T k) {
         if (cur == nullptr) return nullptr;
         std::vector<scoped_ptr<node>> path;
         path.push_back(nullptr);
@@ -259,7 +259,9 @@ struct persistent_set<T, scoped_ptr>::iterator
         return i;
     }
 
-    iterator(scoped_ptr<node> const& owner, scoped_ptr<node> const& ptr) noexcept
+    iterator(iterator const& other) : ptr{other.ptr}, owner{other.owner} {}
+
+    iterator(scoped_ptr<node>const & owner, scoped_ptr<node> const& ptr) noexcept
         : ptr(ptr), owner(owner) {
     }
 
@@ -275,9 +277,7 @@ struct persistent_set<T, scoped_ptr>::iterator
         return !(a == b);
     }
 
-    ~iterator() {
-
-    }
+    ~iterator() {}
 
 private:
 

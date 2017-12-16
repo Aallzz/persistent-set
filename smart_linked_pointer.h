@@ -30,7 +30,7 @@ struct smart_linked_pointer {
 
     smart_linked_pointer(std::nullptr_t) noexcept {}
 
-    smart_linked_pointer& operator = (smart_linked_pointer const& other) noexcept {
+    smart_linked_pointer& operator = (smart_linked_pointer& other) noexcept {
         if (pdata == other.pdata) return *this;
         remove_node();
         pdata = other.pdata;
@@ -124,8 +124,8 @@ struct smart_linked_pointer {
 private:
 
     T *pdata {nullptr};
-    mutable smart_linked_pointer *left {nullptr};
-    mutable smart_linked_pointer *right {nullptr};
+    mutable smart_linked_pointer const *left {nullptr};
+    mutable smart_linked_pointer const *right {nullptr};
 
     void remove_node() noexcept {
         if (left) left->right = right;
