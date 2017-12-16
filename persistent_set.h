@@ -279,12 +279,6 @@ struct persistent_set<T, scoped_ptr>::iterator
 
     }
 
-    using difference_type = std::ptrdiff_t;
-    using value_type = T;
-    using pointer = T*;
-    using reference = T&;
-    using iterator_category = std::bidirectional_iterator_tag;
-
 private:
 
     scoped_ptr<node> ptr;
