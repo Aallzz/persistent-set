@@ -10,7 +10,6 @@ template <typename T, template<typename> class scoped_ptr = smart_shared_pointer
 struct persistent_set
 {
     using value_type = T;
-
     struct iterator;
 
     persistent_set() {}
@@ -279,6 +278,12 @@ struct persistent_set<T, scoped_ptr>::iterator
     ~iterator() {
 
     }
+
+    using difference_type = std::ptrdiff_t;
+    using value_type = T;
+    using pointer = T*;
+    using reference = T&;
+    using iterator_category = std::bidirectional_iterator_tag;
 
 private:
 

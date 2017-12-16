@@ -31,10 +31,10 @@ struct smart_linked_pointer {
     smart_linked_pointer(std::nullptr_t) noexcept {}
 
     smart_linked_pointer& operator = (smart_linked_pointer const& other) noexcept {
-        if (pdata == other.pdata) return ;
+        if (pdata == other.pdata) return *this;
         remove_node();
         pdata = other.pdata;
-        if (pdata == nullptr) return ;
+        if (pdata == nullptr) return *this;
         left = &other;
         right = other.right;
         if (other.right) {
