@@ -32,12 +32,8 @@ struct smart_linked_pointer {
 
     smart_linked_pointer& operator = (smart_linked_pointer const& other) {
         if (pdata == other.pdata) return ;
-        if (left) left->right = right;
-        if (right) right->left = left;
-        if (!left && !right)
-            delete pdata, pdata = nullptr;
+        remove_node();
         pdata = other.pdata;
-        left = right = nullptr;
         if (pdata == nullptr) return ;
         left = &other;
         right = other.right;
@@ -49,11 +45,7 @@ struct smart_linked_pointer {
     }
 
     smart_linked_pointer& operator = (smart_linked_pointer&& other) {
-        if (left) left->right = right;
-        if (right) right->left = left;
-        if (!left && !right) {
-            delete pdata;
-        }
+        remove_node();
         pdata = other.pdata;
         left = other.left;
         right = other.right;
@@ -66,13 +58,7 @@ struct smart_linked_pointer {
     }
 
     smart_linked_pointer& operator = (std::nullptr_t) {
-        if (left) left->right = right;
-        if (right) right->left = left;
-        if (!left && !right) {
-            delete pdata;
-        }
-        left = right = nullptr;
-        pdata = nullptr;
+        remove_node();
         return *this;
     }
 
@@ -91,12 +77,12 @@ struct smart_linked_pointer {
         return pdata;
     }
 
-//    friend void swap(smart_linked_pointer& p1, smart_linked_pointer& p2) {
-//        if (p1.pdata == p2.pdata) return ;
-//        std::swap(p1.pdata, p2.pdata);
-//        std::swap(p1.left, p2.left);
-//        std::swap(p1.right, p2.right);
-//    }
+    friend void swap(smart_linked_pointer& p1, smart_linked_pointer& p2) noexcept {
+        if (p1.pdata == p2.pdata) return ;
+        std::swap(p1.pdata, p2.pdata);
+        std::swap(p1.left, p2.left);
+        std::swap(p1.right, p2.right);
+    }
 
     operator bool() const{
         return pdata;
@@ -123,6 +109,16 @@ private:
     T *pdata {nullptr};
     mutable smart_linked_pointer *left {nullptr};
     mutable smart_linked_pointer *right {nullptr};
+
+    void remove_node() {
+        if (left) left->right = right;
+        if (right) right->left = left;
+        if (!left && !right) {
+            delete pdata;
+        }
+        left = right = nullptr;
+        pdata = nullptr;
+    }
 };
 
 #endif // SMART_SHARED_POINTER_H

@@ -4,8 +4,9 @@
 #include <memory>
 #include <vector>
 #include <cassert>
+#include "smart_shared_pointer.h"
 
-template <typename T, template<typename> class scoped_ptr = std::shared_ptr>
+template <typename T, template<typename> class scoped_ptr = smart_shared_pointer>
 struct persistent_set
 {
     using value_type = T;
